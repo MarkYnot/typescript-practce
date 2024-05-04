@@ -3,18 +3,19 @@ const URL_200 = "https://user1713861685783.requestly.tech/orders";
 const URL_500 = "https://user1713861685783.requestly.tech/flights";
 
 class HttpError extends Error {
-  constructor(public response: Response) {
+  response: Response;
+  constructor(response: Response) {
     super(`${response.status} for ${response.url}`);
-    // this.response = response;
+    this.response = response;
   }
 }
 
-interface data {
+type data = {
   data: unknown;
   error: string | undefined;
-}
+};
 
-const fetechData = async (url: string) => {
+const fetchData = async (url: string) => {
   const result: data = {
     error: undefined,
     data: undefined,
@@ -47,4 +48,4 @@ const fetechData = async (url: string) => {
   return result;
 };
 
-console.log(fetechData(URL_TIMEOUT));
+fetchData(URL_TIMEOUT).then((value) => console.log(value));
