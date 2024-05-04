@@ -1,4 +1,5 @@
-const URL_TIMEOUT = "https://user1713861685783.requestly.tech/timeout";
+/**
+ * const URL_TIMEOUT = "https://user1713861685783.requestly.tech/timeout";
 const URL_200 = "https://user1713861685783.requestly.tech/orders";
 const URL_500 = "https://user1713861685783.requestly.tech/flights";
 const RESOURCES = {
@@ -9,6 +10,7 @@ const RESOURCES = {
 };
 
 const BASE_URL = "https://9869a3a9-f664-4a36-9b12-8eaa99787ff8.mock.pstmn.io";
+const url = new URL(RESOURCES.orders, BASE_URL);
 
 class HttpError extends Error {
   response: Response;
@@ -18,14 +20,16 @@ class HttpError extends Error {
   }
 }
 
-type FetchDataResponse<T> =
-  | { data: T; error: undefined }
-  | { data: undefined; error: string };
+type data = {
+  data: unknown;
+  error: string | undefined;
+};
 
-const fetchData = async <T>(
-  resource: keyof typeof RESOURCES
-): Promise<FetchDataResponse<T>> => {
-  const url = new URL(RESOURCES[resource], BASE_URL);
+const fetchData = async (url: URL) => {
+  const result: data = {
+    error: undefined,
+    data: undefined,
+  };
 
   try {
     const data = await fetch(url, {
@@ -36,21 +40,26 @@ const fetchData = async <T>(
     if (!data.ok) {
       throw new HttpError(data); //http error library; class
     }
-    return { error: undefined, data: await data.json() };
+    const fetchResult = await data.json();
+    result.data = fetchResult;
   } catch (error) {
-    if (error instanceof DOMException && error.name === "TimeoutError") {
-      return { error: "Request Timed out", data: undefined };
+    if (error.name === "TimeoutError") {
+      result.error = "Request Timed out";
     }
 
     if (error instanceof HttpError) {
       if (error.response.status === 500) {
-        return { error: "Server down", data: undefined };
+        result.error = "Server Down";
       } else if (error.response.status === 404) {
-        return { error: "Not Found", data: undefined };
+        result.error = "Not Found";
       }
     }
   }
-  return { error: "other error", data: undefined };
+  return result;
 };
 
-fetchData<string>("orders").then((value) => console.log(value));
+fetchData(url).then((value) => console.log(value));
+
+ * 
+ * 
+ */
